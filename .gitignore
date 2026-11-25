@@ -1,0 +1,21 @@
+# 编译产物
+*.exe
+*.o
+*.obj
+*.a
+*.so
+*.dll
+*.class
+*.pyc
+__pycache__/
+
+# 临时文件
+*.tmp
+Temp/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# C 盘旧副本归档与临时验收文件
+.archive/

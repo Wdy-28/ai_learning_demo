@@ -1,0 +1,52 @@
+name: 同步课表（个人工作台）
+
+# 个人工作台已并入 ai-learning 项目库。
+# 仅手动触发：避免定时自动登录教务系统带来的账号风险。
+# 在 GitHub 仓库 Actions 页面点 “Run workflow” 才会运行。
+# JW_USER / JW_PASSWORD 需要配置在 ai_learning_demo 仓库的 Secrets 中。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-personal-dashboard
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 安装依赖
+        run: pip install -r code/personal-dashboard/scripts/requirements.txt
+
+      - name: 抓取课表
+        env:
+          JW_USER: ${{ secrets.JW_USER }}
+          JW_PASSWORD: ${{ secrets.JW_PASSWORD }}
+          JW_BASE_URL: ${{ vars.JW_BASE_URL || 'https://jw.glut.edu.cn' }}
+          JW_LOGIN_PATH: ${{ vars.JW_LOGIN_PATH || '/academic/affairLogin.do' }}
+          JW_HOME_PATH: ${{ vars.JW_HOME_PATH || '/academic/xs_main.aspx?xh=' }}
+          JW_SCHEDULE_PATH: ${{ vars.JW_SCHEDULE_PATH || '/academic/xskbcx.aspx?gnmkdm=N121603&xh=' }}
+          JW_HAS_CAPTCHA: ${{ vars.JW_HAS_CAPTCHA || '0' }}
+        run: python code/personal-dashboard/scripts/fetch_schedule.py
+
+      - name: 提交变更
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- code/personal-dashboard/courses.json code/personal-dashboard/courses.js; then
+            echo "课表无变化"
+            exit 0
+          fi
+          git add code/personal-dashboard/courses.json code/personal-dashboard/courses.js
+          git commit -m "chore: 同步课表 $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push
