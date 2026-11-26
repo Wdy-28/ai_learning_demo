@@ -1,2 +1,51 @@
-# ai_learning_demo
-My first git repository for code practice
+# ai-learning 项目文件夹索引
+
+本仓库是个人综合产物仓库，承载学习、比赛、项目、代码练习及生活记录。顶层按内容类型划分为 `code`、`note`、`output` 三类，场景（学习／比赛／项目／生活）通过文件名前缀和本文件的场景反查表区分，不为每个场景单独建顶层目录。
+
+## 目录结构
+
+```
+D:/ai-learning/
+├── README.md              ← 本索引，唯一入口
+├── .gitignore             ← 排除编译产物与临时文件
+├── code/                  ← 源码与工程
+│   └── circle-area/       ← 圆面积计算练习
+│       └── circle-area.cpp
+├── note/                  ← 素材收集（文档、截图、链接、数据集、摘录）
+└── output/                ← 交付成品（报告、作品、演示、打包结果）
+```
+
+## 目录说明
+
+| 路径 | 用途 | 适合存放 | 关键词 / 标签 | 维护规则 |
+|---|---|---|---|---|
+| `code/` | 源码与工程 | 练习程序、项目代码、算法实现、构建配置 | 代码、源码、program、source、cpp、python | 一个独立项目一个子目录，目录名即项目名（小写英文＋连字符）；不按语言分层，语言从扩展名判断 |
+| `code/circle-area/` | 圆面积计算练习 | C/C++ 入门练习源码 | 圆面积、circle、area、geometry、cpp | 编译产物不入库；源文件用功能名，不使用"未命名" |
+| `note/` | 素材收集 | 文章、PDF、截图、链接清单、比赛数据集、摘录、命令备忘 | 素材、资料、参考、note、reference、dataset、snippet | 内部按需分 `reference/`（外部资料）、`dataset/`（数据）、`snippet/`（片段）；链接类用 `.md` 记录 URL 和摘要，不存孤立书签 |
+| `output/` | 交付成品 | 报告、文档成品、演示截图／录屏、打包结果 | 成品、产出、报告、report、demo、deliverable | 内部按需分 `report/`、`demo/`、`package/`；只放可交付版本，过程稿留在 `note/` |
+
+## 命名规范
+
+- 目录：小写英文＋连字符，语义化；不使用扩展名作为目录名（避免 `demo.c` 这类歧义）。
+- 文件：`<场景>-<主题>-<内容>.<扩展名>`；需按时序时用 `YYYYMMDD-` 开头。
+  - 场景前缀：`study-`（学习）、`contest-`（比赛）、`project-`（项目）、`life-`（生活）、`demo-`（练习）。简单练习可省略场景前缀。
+  - 示例：`contest-mathmodel-report.md`、`study-python-note.md`、`20261124-contest-dataset-clean.xlsx`。
+- 禁用名称：`未命名`、`新建文件夹`、`temp` 等无语义或易误判的名称。
+- 跨目录关联：同一项目在 `code/`、`note/`、`output/` 三处使用相同项目名前缀，便于一次搜索串起全部材料。
+
+## 场景反查表
+
+| 场景 | 定位路径 |
+|---|---|
+| 学习 | `note/`（素材）· `output/report/`（总结）· `code/`（练习） |
+| 比赛 | `note/dataset/` · `code/contest-*` · `output/` |
+| 项目 | `code/project-*` · `note/` · `output/package/` |
+| 生活 | `note/` · `output/` |
+
+## 维护规则
+
+- 新增内容先判定属于素材、源码、成品中的哪一类，再入对应顶层；不因场景新增第四类顶层目录。
+- 编译产物、临时文件、缓存不入库，统一由 `.gitignore` 排除。
+- 生活类私人信息（证件、账单、照片等）不要放进这个仓库，尤其未来若推送远程；另建本地非 Git 目录存放。
+- `note/` 与 `output/` 的二级目录在首批同类内容到位时再创建，不预建空目录。
+- 每完成一个项目后核对一次本索引，目录用途变化就同步更新，避免索引与实际脱节。
