@@ -94,8 +94,15 @@ def weeks_hit(weeks_text, week):
     hit = False
     for seg in re.split(r"[,，;；/、]", t):
         seg = seg.replace("第", "").replace("周", "").replace("—", "-").replace("~", "-")
-        # 单双周修饰不影响"是否在第 N 周"的判断，先剥掉
-        seg = seg.replace("单", "").replace("双", "")
+        # 单/双周：先判断奇偶，不符合直接跳过该段
+        parity = None
+        if "单" in seg:
+            parity, seg = 1, seg.replace("单", "")
+        elif "双" in seg:
+            parity, seg = 0, seg.replace("双", "")
+        if parity is not None and week % 2 != parity:
+            hit = True  # 单双周已识别，但本周奇偶不符
+            continue
         m = re.match(r"^(\d+)-(\d+)$", seg)
         if m:
             if int(m.group(1)) <= week <= int(m.group(2)):
