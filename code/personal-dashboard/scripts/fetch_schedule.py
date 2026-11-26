@@ -87,20 +87,29 @@ def period_range(text):
 
 
 def weeks_hit(weeks_text, week):
-    """判断周次描述是否包含指定周；不合法返回 False。"""
+    """判断周次描述是否包含指定周。无法识别的格式一律保留，避免漏课。"""
     t = norm(weeks_text)
-    if not t:
-        return False
-    for seg in re.split(r"[,，;；]", t):
-        m = re.match(r"^(\d+)-(\d+)周?$", seg)
+    if not t or week is None:
+        return True  # 无周次信息或不过滤时，保留
+    hit = False
+    for seg in re.split(r"[,，;；/、]", t):
+        seg = seg.replace("第", "").replace("周", "").replace("—", "-").replace("~", "-")
+        # 单双周修饰不影响"是否在第 N 周"的判断，先剥掉
+        seg = seg.replace("单", "").replace("双", "")
+        m = re.match(r"^(\d+)-(\d+)$", seg)
         if m:
             if int(m.group(1)) <= week <= int(m.group(2)):
                 return True
+            hit = True  # 格式能识别，但本周不在范围内
             continue
-        m = re.match(r"^第?(\d+)周?$", seg)
-        if m and int(m.group(1)) == week:
-            return True
-    return False
+        m = re.match(r"^(\d+)$", seg)
+        if m:
+            if int(m.group(1)) == week:
+                return True
+            hit = True
+            continue
+    # 有可识别格式但都不命中 -> False；全是不可识别格式 -> True（保守保留）
+    return not hit
 
 
 def current_week():
@@ -189,11 +198,13 @@ def parse_schedule(html, week):
                 "title": title[:24],
                 "location": loc[:24],
                 "teacher": teacher[:12],
+                "weeks": weeks[:24],
             })
-    # 去重：同一课程同星期同节次同教室只保留一条
+    # 去重：同一课程同星期同节次同教室同周次只保留一条
+    # 注意：不去重周次，否则同一门课分段周次（如体育 1-8周 / 9-16周）会被合并，导致漏课
     seen, uniq = set(), []
     for c in out:
-        key = (c["day"], c["period"], c["end"], c["title"], c["location"])
+        key = (c["day"], c["period"], c["end"], c["title"], c["location"], c.get("weeks", ""))
         if key in seen:
             continue
         seen.add(key)
