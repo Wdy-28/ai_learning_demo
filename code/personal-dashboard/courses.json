@@ -1,6 +1,6 @@
 {
   "source": "正方教务系统",
-  "syncedAt": "2026-11-26T23:25:20+08:00",
+  "syncedAt": "2026-11-26T23:29:49+08:00",
   "year": "2026",
   "term": "1",
   "periods": [
@@ -72,7 +72,17 @@
       "end": 2,
       "title": "专业导论（光电信息科学与工程）",
       "location": "07120D",
-      "teacher": "夏雄平"
+      "teacher": "夏雄平",
+      "weeks": "11-12周"
+    },
+    {
+      "day": 1,
+      "period": 3,
+      "end": 4,
+      "title": "体育1",
+      "location": "体育训练馆",
+      "teacher": "史伟",
+      "weeks": "6-16双周"
     },
     {
       "day": 1,
@@ -80,7 +90,8 @@
       "end": 6,
       "title": "思想道德与法治",
       "location": "04621D",
-      "teacher": "侯彦恒"
+      "teacher": "侯彦恒",
+      "weeks": "9-18周"
     },
     {
       "day": 1,
@@ -88,7 +99,8 @@
       "end": 8,
       "title": "C语言程序设计（二）",
       "location": "05306D",
-      "teacher": "杨呈永"
+      "teacher": "杨呈永",
+      "weeks": "8-17周"
     },
     {
       "day": 2,
@@ -96,7 +108,8 @@
       "end": 2,
       "title": "大学英语1",
       "location": "06507D",
-      "teacher": "滕丽媛"
+      "teacher": "滕丽媛",
+      "weeks": "6-15周"
     },
     {
       "day": 2,
@@ -104,7 +117,8 @@
       "end": 4,
       "title": "高等数学1（上）",
       "location": "07614D",
-      "teacher": "李明"
+      "teacher": "李明",
+      "weeks": "6-18周"
     },
     {
       "day": 2,
@@ -112,7 +126,8 @@
       "end": 6,
       "title": "线性代数",
       "location": "04109D",
-      "teacher": "邓小芹"
+      "teacher": "邓小芹",
+      "weeks": "9-18周"
     },
     {
       "day": 2,
@@ -120,7 +135,8 @@
       "end": 8,
       "title": "人工智能基础与应用",
       "location": "014202J",
-      "teacher": "韦兴"
+      "teacher": "韦兴",
+      "weeks": "12-17周"
     },
     {
       "day": 3,
@@ -128,7 +144,8 @@
       "end": 2,
       "title": "思想道德与法治",
       "location": "04111D",
-      "teacher": "侯彦恒"
+      "teacher": "侯彦恒",
+      "weeks": "9-18周"
     },
     {
       "day": 3,
@@ -136,7 +153,8 @@
       "end": 4,
       "title": "高等数学1（上）",
       "location": "07614D",
-      "teacher": "李明"
+      "teacher": "李明",
+      "weeks": "6-18周"
     },
     {
       "day": 3,
@@ -144,7 +162,8 @@
       "end": 6,
       "title": "中华民族共同体概论",
       "location": "06301ZH",
-      "teacher": "张露萍"
+      "teacher": "张露萍",
+      "weeks": "11-17周"
     },
     {
       "day": 3,
@@ -152,7 +171,8 @@
       "end": 12,
       "title": "军事理论",
       "location": "06509D",
-      "teacher": "范志祥"
+      "teacher": "范志祥",
+      "weeks": "6-7,9-13"
     },
     {
       "day": 4,
@@ -160,7 +180,8 @@
       "end": 2,
       "title": "高等数学1（上）",
       "location": "07614D",
-      "teacher": "李明"
+      "teacher": "李明",
+      "weeks": "5-7,9-18"
     },
     {
       "day": 4,
@@ -168,7 +189,8 @@
       "end": 4,
       "title": "中华民族共同体概论",
       "location": "04111D",
-      "teacher": "张露萍"
+      "teacher": "张露萍",
+      "weeks": "11-13周"
     },
     {
       "day": 4,
@@ -176,7 +198,8 @@
       "end": 6,
       "title": "线性代数",
       "location": "04109D",
-      "teacher": "邓小芹"
+      "teacher": "邓小芹",
+      "weeks": "9-18周"
     },
     {
       "day": 4,
@@ -184,7 +207,17 @@
       "end": 8,
       "title": "人工智能基础与应用",
       "location": "014202J",
-      "teacher": "韦兴"
+      "teacher": "韦兴",
+      "weeks": "12-17周"
+    },
+    {
+      "day": 5,
+      "period": 3,
+      "end": 4,
+      "title": "大学英语1",
+      "location": "06507D",
+      "teacher": "滕丽媛",
+      "weeks": "5-13单周"
     },
     {
       "day": 5,
@@ -192,7 +225,8 @@
       "end": 4,
       "title": "大学英语1",
       "location": "04318Y",
-      "teacher": "滕丽媛"
+      "teacher": "滕丽媛",
+      "weeks": "6,10,12,14,15"
     },
     {
       "day": 5,
@@ -200,7 +234,8 @@
       "end": 6,
       "title": "C语言程序设计（二）",
       "location": "014204J",
-      "teacher": "杨呈永"
+      "teacher": "杨呈永",
+      "weeks": "12-17周"
     }
   ]
 }
