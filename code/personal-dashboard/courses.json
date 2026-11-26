@@ -1,6 +1,6 @@
 {
   "source": "正方教务系统",
-  "syncedAt": "2026-11-26T23:29:49+08:00",
+  "syncedAt": "2026-11-26T23:31:00+08:00",
   "year": "2026",
   "term": "1",
   "periods": [
@@ -209,15 +209,6 @@
       "location": "014202J",
       "teacher": "韦兴",
       "weeks": "12-17周"
-    },
-    {
-      "day": 5,
-      "period": 3,
-      "end": 4,
-      "title": "大学英语1",
-      "location": "06507D",
-      "teacher": "滕丽媛",
-      "weeks": "5-13单周"
     },
     {
       "day": 5,
