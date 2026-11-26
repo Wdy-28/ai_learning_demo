@@ -33,6 +33,7 @@ jobs:
           JW_USER: ${{ secrets.JW_USER }}
           JW_PASSWORD: ${{ secrets.JW_PASSWORD }}
           JW_BASE_URL: ${{ vars.JW_BASE_URL || 'https://jw.glut.edu.cn' }}
+          JW_TERM_START: ${{ vars.JW_TERM_START || '2026-09-07' }}
         run: python code/personal-dashboard/scripts/fetch_schedule.py
 
       - name: 提交变更
