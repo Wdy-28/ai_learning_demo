@@ -46,4 +46,6 @@ jobs:
           fi
           git add code/personal-dashboard/courses.json code/personal-dashboard/courses.js
           git commit -m "chore: 同步课表 $(date -u +%Y-%m-%dT%H:%MZ)"
+          # 抓取与人工改代码可能同时发生；推送前先对齐远端，避免 non-fast-forward 导致整次同步失败。
+          git pull --rebase origin main
           git push
