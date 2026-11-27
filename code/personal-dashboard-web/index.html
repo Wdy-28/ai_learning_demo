@@ -1247,12 +1247,40 @@ a.tool:hover{background:#f2faf5;border-color:#bfe3cf}
       return await r.json();
     }catch(e){return null;}
   }
+  // 公开读取 GitHub 最新课表：无需令牌，6 秒超时避免慢网络卡住页面打开。
+  async function fetchPublicRemote(){
+    try{
+      var ctl=new AbortController();
+      var timer=setTimeout(function(){ctl.abort();},6000);
+      var r;
+      try{
+        r=await fetch('https://api.github.com/repos/Wdy-28/ai_learning_demo/contents/code/personal-dashboard/courses.json?ref=main&t='+Date.now(),{
+          headers:{'Accept':'application/vnd.github+json'},signal:ctl.signal
+        });
+      }finally{clearTimeout(timer);}
+      if(!r.ok)return null;
+      var j=await r.json();
+      if(typeof j.content!=='string')return null;
+      var bin=atob(j.content.replace(/\s/g,'')),bytes=new Uint8Array(bin.length);
+      for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+      return JSON.parse(new TextDecoder('utf-8').decode(bytes));
+    }catch(e){return null;}
+  }
   async function syncCourses(){
     var local=window.COURSE_SYNC;
+    var remote=null;
+    try{remote=await fetchPublicRemote();}catch(e){}
+    var lt=local&&local.syncedAt?Date.parse(local.syncedAt):0;
+    var rt=remote&&remote.syncedAt?Date.parse(remote.syncedAt):0;
+    if(remote&&rt>=lt&&applyRemote(remote)){
+      setSyncUI('live','已自动同步最新课表',remote.syncedAt?('同步于 '+remote.syncedAt.replace('T',' ').slice(0,16)):'');
+      return;
+    }
     if(local&&applyRemote(local)){
       setSyncUI('live','已自动同步 D 盘',local.syncedAt?('同步于 '+local.syncedAt.replace('T',' ').slice(0,16)):'');
       return;
     }
+    if(remote&&applyRemote(remote))return;
     var data=await tryFetch(RAW_URL);
     if(data&&applyRemote(data))return;
     if(!showCache())setSyncUI('error','同步失败，使用示例课表','');
