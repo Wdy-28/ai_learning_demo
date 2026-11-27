@@ -1284,6 +1284,17 @@ a.tool:hover{background:#f2faf5;border-color:#bfe3cf}
     if(!res.ok||!res.body||!Array.isArray(res.body.workflow_runs))return null;
     return res.body.workflow_runs[0]||null;
   }
+  // 从 GitHub API 拉课表：raw.githubusercontent.com 在某些情况下超时，API 与触发接口同域名更可靠。
+  async function fetchViaApi(){
+    var res=await ghApi('/contents/code/personal-dashboard/courses.json?ref=main&t='+Date.now());
+    if(!res.ok||!res.body||typeof res.body.content!=='string')return null;
+    try{
+      var b64=res.body.content.replace(/\s/g,'');
+      var bin=atob(b64),bytes=new Uint8Array(bin.length);
+      for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+      return JSON.parse(new TextDecoder('utf-8').decode(bytes));
+    }catch(e){return null;}
+  }
   async function oneClickSync(){
     if(!getToken()){
       $('tokenBox').hidden=false;$('tokenInput').focus();
@@ -1322,8 +1333,11 @@ a.tool:hover{background:#f2faf5;border-color:#bfe3cf}
       }
       if(!run)throw new Error('等待抓取超时，请稍后重试');
       setSyncUI('','抓取完成，正在拉回课表…','');progress(92);
-      var data=await tryFetch(RAW_URL+'?t='+Date.now());
-      if(!data||!applyRemote(data))throw new Error('课表已抓取，但拉回数据失败，请重试');
+      var data=await fetchViaApi();
+      if(!data||!applyRemote(data)){
+        data=await tryFetch(RAW_URL+'?t='+Date.now());
+        if(!data||!applyRemote(data))throw new Error('课表已抓取，但拉回数据失败，请重试');
+      }
       progress(100);
       setSyncUI('live','已同步 · 教务系统',run.updated_at?('同步于 '+run.updated_at.replace('T',' ').slice(0,16)):'');
       setTimeout(function(){progress(null);},1000);
