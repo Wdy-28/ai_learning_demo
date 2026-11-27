@@ -132,6 +132,18 @@ button{cursor:pointer}
 .sync-bar .sync-time{color:#91a99c;font-size:10.5px}
 .sync-bar .sync-btn{margin-left:auto;border:1px solid #cde6d8;background:#fff;color:#2f8a70;border-radius:7px;padding:3px 8px;font-size:10.5px;white-space:nowrap}
 .sync-bar .sync-btn:hover{background:#eaf5ee}
+.sync-bar .sync-btn+.sync-btn{margin-left:0}
+.sync-bar .sync-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.sync-bar .sync-btn.primary:hover{filter:brightness(1.06)}
+.sync-bar .sync-btn:disabled{opacity:.5;cursor:not-allowed}
+.sync-progress{height:4px;background:#e6f1e9;border-radius:3px;margin:-4px 0 10px;overflow:hidden}
+.sync-progress>span{display:block;height:100%;width:8%;background:var(--accent);transition:width .4s}
+.token-box{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 10px;padding:9px 10px;background:#f6fbf7;border:1px dashed #cde6d8;border-radius:9px}
+.token-box .token-input{flex:1;min-width:180px;border:1px solid #d8e9de;background:#fff;border-radius:6px;padding:5px 7px;font-size:11px}
+.token-box button{border:1px solid #cde6d8;background:#fff;color:#2f8a70;border-radius:7px;padding:4px 10px;font-size:10.5px;cursor:pointer;white-space:nowrap}
+.token-box button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.token-box .token-hint{flex-basis:100%;font-size:10px;color:#9bb2a5;line-height:1.5}
+[hidden]{display:none!important}
 .ocr-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px;padding:8px 10px;background:#f6fbf7;border:1px dashed #cde6d8;border-radius:9px}
 .ocr-pick,.ocr-btn{border:1px solid #cde6d8;background:#fff;color:#2f8a70;border-radius:7px;padding:4px 10px;font-size:11px;cursor:pointer;white-space:nowrap}
 .ocr-pick:hover,.ocr-btn:hover{background:#eaf5ee}
@@ -425,7 +437,15 @@ a.tool:hover{background:#f2faf5;border-color:#bfe3cf}
           <span class="dot" id="syncDot"></span>
           <span id="syncText">未同步</span>
           <span class="sync-time" id="syncTime"></span>
-          <button class="sync-btn" type="button" id="syncBtn">重新同步</button>
+          <button class="sync-btn" type="button" id="tokenBtn">设置令牌</button>
+          <button class="sync-btn primary" type="button" id="syncBtn">一键同步</button>
+        </div>
+        <div class="sync-progress" id="syncProgress" hidden><span id="syncProgressFill"></span></div>
+        <div class="token-box" id="tokenBox" hidden>
+          <input class="token-input" type="password" id="tokenInput" placeholder="粘贴 GitHub 个人访问令牌" autocomplete="off">
+          <button class="primary" type="button" id="tokenSave">保存</button>
+          <button type="button" id="tokenCancel">取消</button>
+          <div class="token-hint" id="tokenHint">令牌只保存在当前浏览器，不写进代码、不随分享链接传播。需要能触发该仓库 Actions 的令牌（fine-grained token 勾选 Actions 读写，或 classic token 勾选 workflow）。</div>
         </div>
         <div class="ocr-bar">
           <label class="ocr-pick" for="ocrFile">上传课表截图</label>
@@ -1237,6 +1257,83 @@ a.tool:hover{background:#f2faf5;border-color:#bfe3cf}
     if(data&&applyRemote(data))return;
     if(!showCache())setSyncUI('error','同步失败，使用示例课表','');
   }
+  // 一键同步：用本机令牌触发 GitHub Actions 抓取教务，等跑完后拉回仓库最新课表。
+  var TOKEN_KEY=KEY+':ghToken';
+  var API_ROOT='https://api.github.com/repos/Wdy-28/ai_learning_demo';
+  var WORKFLOW='sync-schedule.yml';
+  var TIMEOUT_MS=180000, POLL_MS=4000;
+  function getToken(){try{return localStorage.getItem(TOKEN_KEY)||'';}catch(e){return '';}}
+  function setToken(v){try{v?localStorage.setItem(TOKEN_KEY,v):localStorage.removeItem(TOKEN_KEY);}catch(e){}}
+  function progress(pct){
+    if(pct==null){$('syncProgress').hidden=true;return;}
+    $('syncProgress').hidden=false;
+    $('syncProgressFill').style.width=Math.max(4,Math.min(100,pct))+'%';
+  }
+  function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+  async function ghApi(path,opt){
+    opt=opt||{};opt.headers=opt.headers||{};
+    opt.headers['Accept']='application/vnd.github+json';
+    opt.headers['X-GitHub-Api-Version']='2022-11-28';
+    opt.headers['Authorization']='Bearer '+getToken();
+    var r=await fetch(API_ROOT+path,opt);
+    var body=null;try{body=await r.json();}catch(e){}
+    return {ok:r.ok,status:r.status,body:body};
+  }
+  async function latestRun(){
+    var res=await ghApi('/actions/workflows/'+WORKFLOW+'/runs?per_page=1');
+    if(!res.ok||!res.body||!Array.isArray(res.body.workflow_runs))return null;
+    return res.body.workflow_runs[0]||null;
+  }
+  async function oneClickSync(){
+    if(!getToken()){
+      $('tokenBox').hidden=false;$('tokenInput').focus();
+      setSyncUI('error','请先设置 GitHub 令牌','');return;
+    }
+    var btn=$('syncBtn');btn.disabled=true;
+    setSyncUI('','正在提交抓取任务…','');progress(8);
+    try{
+      var before=await latestRun();
+      var beforeId=before?before.id:0;
+      var startedAt=before&&before.created_at?Date.parse(before.created_at):0;
+      var trig=await ghApi('/actions/workflows/'+WORKFLOW+'/dispatches',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ref:'main'})
+      });
+      if(!trig.ok){
+        var msg=(trig.body&&trig.body.message)||('HTTP '+trig.status);
+        throw new Error(trig.status===401||trig.status===403?'令牌无效或权限不足：'+msg:'触发失败：'+msg);
+      }
+      setSyncUI('','教务抓取中，约 1–2 分钟…','');progress(25);
+      var deadline=Date.now()+TIMEOUT_MS;
+      var run=null;
+      while(Date.now()<deadline){
+        await sleep(POLL_MS);
+        var elapsed=TIMEOUT_MS-(deadline-Date.now());
+        progress(25+Math.round(elapsed/TIMEOUT_MS*60));
+        var cur=await latestRun();
+        if(!cur)continue;
+        var isNew=cur.id>beforeId||(startedAt&&Date.parse(cur.created_at)>startedAt);
+        if(isNew&&cur.status==='completed'){
+          if(cur.conclusion!=='success'){
+            throw new Error('抓取失败（'+(cur.conclusion||'未知')+'），请到 GitHub Actions 查看日志');
+          }
+          run=cur;break;
+        }
+      }
+      if(!run)throw new Error('等待抓取超时，请稍后重试');
+      setSyncUI('','抓取完成，正在拉回课表…','');progress(92);
+      var data=await tryFetch(RAW_URL+'?t='+Date.now());
+      if(!data||!applyRemote(data))throw new Error('课表已抓取，但拉回数据失败，请重试');
+      progress(100);
+      setSyncUI('live','已同步 · 教务系统',run.updated_at?('同步于 '+run.updated_at.replace('T',' ').slice(0,16)):'');
+      setTimeout(function(){progress(null);},1000);
+    }catch(err){
+      progress(null);
+      setSyncUI('error',(err&&err.message)?err.message:'同步失败','');
+    }finally{
+      btn.disabled=false;
+    }
+  }
   // 截图导入：识别库按需加载，图片与识别结果只在本机处理，确认后才覆盖课表。
   var OCR_LIB_URL='https://cdn.jsdelivr.net/npm/tesseract.js@7.0.0/dist/tesseract.min.js';
   var ocrWorker=null,ocrFile=null,ocrItems=[],ocrObjectUrl='';
@@ -1541,7 +1638,24 @@ a.tool:hover{background:#f2faf5;border-color:#bfe3cf}
     ocrItems=[];ocrStatus('已放弃本次识别结果');
   });
 
-  $('syncBtn').addEventListener('click',function(){syncCourses();});
+  $('tokenBtn').addEventListener('click',function(){
+    var box=$('tokenBox');
+    box.hidden=false;
+    $('tokenInput').value=getToken();
+    $('tokenHint').textContent=getToken()
+      ? '当前浏览器已保存令牌。留空保存可清除；令牌不会写进代码或随分享链接传播。'
+      : '令牌只保存在当前浏览器，不写进代码、不随分享链接传播。需要能触发该仓库 Actions 的令牌（fine-grained token 勾选 Actions 读写，或 classic token 勾选 workflow）。';
+    $('tokenInput').focus();
+  });
+  $('tokenCancel').addEventListener('click',function(){$('tokenBox').hidden=true;});
+  $('tokenSave').addEventListener('click',function(){
+    var v=($('tokenInput').value||'').trim();
+    setToken(v);
+    $('tokenBox').hidden=true;
+    $('tokenInput').value='';
+    setSyncUI(v?'':'error',v?'令牌已保存到本机':'令牌已清除','');
+  });
+  $('syncBtn').addEventListener('click',oneClickSync);
   syncCourses();
 })();
 </script>
